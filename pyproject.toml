@@ -1,0 +1,75 @@
+# AI_Keystone — Python project configuration
+#
+# Phase 0 seed: project metadata + tooling config. Runtime dependencies are added per phase,
+# when a component first imports them (a dependency appears when it is first used, not before).
+# The package itself (src/keystone) is created in Phase 1.
+
+[project]
+name = "keystone"
+version = "0.0.0"
+description = "An agent runtime platform — the infrastructure layer that agentic AI applications execute on."
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Vishal Goyal" }]
+
+dependencies = [
+    # Runtime deps added per phase. Direction (not yet pinned/installed):
+    #   Ph 2+: fastapi, pydantic, structlog, psycopg, redis
+    #   Ph 5+: minio / boto3
+    #   Ph 6+: langgraph
+    #   Ph 9:  lightgbm, scikit-learn  (see ml/ — separate lifecycle)
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+    "pre-commit",
+    "import-linter",   # enforces the dependency rule (Phase 1)
+]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "hypothesis",
+    "coverage[toml]",
+]
+docs = []
+
+# --- src layout: tests exercise the installed package, not the working dir ---
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/keystone"]
+
+# --- ruff: lint + format ---
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "PT", "SIM", "TID"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["keystone"]
+
+# --- mypy: strict on the pure layers ---
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+disallow_any_generics = true
+# domain/ and application/ carry no ignores (see ADR-0002)
+
+# --- pytest ---
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["src/keystone"]
+branch = true

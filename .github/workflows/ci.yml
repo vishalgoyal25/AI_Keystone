@@ -1,0 +1,41 @@
+# AI_Keystone — Continuous Integration
+#
+# Phase 0: lint + format checks that pass on a repo with no package yet.
+# Grows each phase — the dependency rule (Ph 1), tests (Ph 1), and eval gates (Ph 10)
+# are added to this pipeline as those phases land.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: pip install ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Format check
+        run: ruff format --check .
+
+      # Added in later phases:
+      #   - lint-imports              (dependency rule, Ph 1)
+      #   - mypy src                  (Ph 1)
+      #   - pytest                    (Ph 1)
+      #   - python evals/run_evals.py (quality + perf gates, Ph 10)

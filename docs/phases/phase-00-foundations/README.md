@@ -1,6 +1,7 @@
 # Phase 0 · Foundations & Decisions
 
-**Status:** 🟡 in progress · **Duration:** ~1 week · **Track:** T1 Foundation
+**Status:** ✅ complete · 2026-08-18 → 2026-08-20 · **Track:** T1 Foundation
+**Tag:** `v0.1.0-phase-00-foundations` · **PR:** #1
 
 > Full sub-phase detail: [`../../roadmap.md`](../../roadmap.md) § Phase 0.
 
@@ -38,7 +39,7 @@ environment readiness, cloud cost guardrails, and private planning. **No applica
       **Proposed → Accepted**
 - [x] `repository-structure.md` defines the home of every future file type, and every `(Ph N)`
       marker in it maps to an assigned sub-phase in the roadmap
-- [ ] C4 context and OS↔runtime diagrams **render correctly on GitHub** (verify after push)
+- [x] C4 context and OS↔runtime diagrams **render correctly on GitHub** — verified in PR #1
 - [x] `docs/phases/README.md` status board exists and reflects reality
 
 **Environment**
@@ -53,10 +54,11 @@ environment readiness, cloud cost guardrails, and private planning. **No applica
 **Safety & workflow**
 - [x] `.gitignore` verified to exclude `CLAUDE.md`, `private/`, `.env` (`git check-ignore -v`)
 - [x] ~~`private/` backed up~~ — ⏸ deferred to end of Phase 2 (see roadmap 0.10)
-- [ ] CI runs green on lint and formatting (verify after push)
-- [ ] Branch protection active on `main`
+- [x] CI runs green on lint and formatting — PR #1, `quality` job passed
+- [x] Branch protection active on `main` — ruleset "main protection", PR required, 0 approvals,
+      force pushes and deletions blocked
 - [x] `writeup.md` completed against these criteria
-- [ ] Tag `v0.1.0-phase-00-foundations` applied
+- [x] Tag `v0.1.0-phase-00-foundations` applied
 
 **Deferred by decision — not blocking**
 - ⏸ AWS account + hard budget alarm → before Phase 16 (roadmap 0.13)

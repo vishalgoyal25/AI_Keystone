@@ -63,6 +63,18 @@ eight exist.
 | 7 | **Status updates** — phase board, ADR index, roadmap status | `docs/phases/README.md`, `docs/adr/README.md` |
 | 8 | **Session log entries** throughout; final entry closes the phase | `private/planning/session-log.md` |
 
+**Close-out ordering** — status updates (deliverable 7) belong **inside the close-out PR**, not
+after it. Tick every exit criterion that is already true, flip the status board, and complete the
+write-up *before* merging; leave only the tag for afterwards. Otherwise the phase ends with
+orphaned bookkeeping that needs a second PR.
+
+Two criteria cannot be pre-ticked, because they depend on the merge existing — *CI green on the
+PR* and *tag applied*. Tick those in the close-out PR's checklist as they happen, and accept that
+the tag marks **when the work was complete**, not when the record was finished.
+**Never move a pushed tag** to absorb later commits; a tag is an immutable marker, and moving one
+breaks every clone that already fetched it.
+*(Learned in Phase 0, which needed a follow-up `docs/phase-00-status` PR. Applied from Phase 1.)*
+
 **Documentation timing:** produced in one concentrated pass at phase end, not interleaved
 continuously. Interleaving destroys build flow and produces worse writing.
 
@@ -131,7 +143,7 @@ Data plane             ████               Ph 8
 
 # T1 — FOUNDATION
 
-## Phase 0 · Foundations & Decisions
+## Phase 0 · Foundations & Decisions ✅
 
 **Goal** — Establish that no decision in this project goes unrecorded, and that the environment
 is reproducible, before any application code exists.
@@ -245,7 +257,7 @@ Phase 16, and provisioning it early only starts a billing clock.
   a change of mind becomes a new superseding ADR. Index updated with status and date.
 - Files: `docs/adr/0001`–`0006`, `docs/adr/README.md`
 
-### 0.12 Phase close-out
+### 0.12 Phase close-out ✅
 - Branch protection enabled on `main` (PR required, CI green, no direct pushes) — the workflow
   discipline starts here; all later work flows through `phase-NN/<desc>` branches.
 - Diagrams render-checked on GitHub; CI verified green; `writeup.md` completed against the exit

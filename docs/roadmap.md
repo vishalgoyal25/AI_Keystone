@@ -6,6 +6,25 @@
 > through a new ADR, so that deviation is recorded as engineering evolution rather than hidden.
 > Each phase ends with exit criteria that must be **fully** met before the next begins.
 
+> **Altitude — read this first.** This file is the **plan-level index**: what gets built, in what
+> order, why, and how each phase proves itself. It is deliberately ~one page per phase and does
+> **not** contain implementation detail.
+>
+> Implementation depth lives one level down, in `docs/phases/phase-NN-slug/design.md`, written
+> **at the start of that phase** — package trees, interface signatures, schemas, state
+> transitions, algorithms, failure matrices, and test strategy. This is intentional: planning
+> Phase 12 in detail today would be fiction, because Phase 2's pain log and Phase 3's
+> implementation will change what Phase 12 should be. **Plan depth is inversely proportional to
+> distance** — near work planned deeply, far work planned coarsely.
+>
+> | Altitude | Document | Written |
+> | --- | --- | --- |
+> | Plan | this file | once; revised via ADR |
+> | **Design** | `phases/phase-NN-*/design.md` | **at phase start** |
+> | Decision | `adr/NNNN-*.md` | as decided |
+> | Mechanism | `architecture/concepts/*.md` | during the phase |
+> | Record | `phases/phase-NN-*/writeup.md` | at phase end |
+
 ---
 
 ## How to read this
@@ -46,6 +65,13 @@ eight exist.
 
 **Documentation timing:** produced in one concentrated pass at phase end, not interleaved
 continuously. Interleaving destroys build flow and produces worse writing.
+
+**Targets are declared before measurement.** Any phase that measures something states its target
+in `design.md` **before** building — e.g. *"TTFT p95 < 2s"*, *"Recall@10 ≥ 0.85"*, *"crash-resume
+< 5s"*, *"cost per run < $0.02"*. Reporting whatever number appeared and calling it acceptable is
+rationalisation; declaring the target first and then reporting hit-or-miss is engineering. Missed
+targets are recorded honestly in `writeup.md`, with the reason — a missed target that is
+understood is a stronger artifact than a vague success.
 
 **The per-phase diagram** (deliverable 6) is the highest-reach artifact the project produces —
 a good architecture diagram is shared far more widely than a good ADR is read. Planned subjects:
@@ -111,25 +137,31 @@ Data plane             ████               Ph 8
 is reproducible, before any application code exists.
 
 **Why here** — Documentation discipline cannot be retrofitted honestly; backfilled ADRs read as
-backfilled. Cost guardrails must exist before any cloud resource can be created.
+backfilled. The environment must be verified — not assumed — before code depends on it.
 
 **Duration** — ~1 week
 
-### 0.1 Repo foundation & rulebook
+**Sequence** — 0.1–0.6 create the written and tooling foundation; 0.7–0.9 make the local
+environment real and **verified**; 0.10–0.12 close the phase (decisions accepted, work protected,
+record written, tag applied). Cloud setup (0.13) is **deferred** — it is not required until
+Phase 16, and provisioning it early only starts a billing clock.
+
+### 0.1 Repo foundation & rulebook ✅
 - Private operating manual; ignore rules covering environments, secrets, IaC state, data,
   models, observability volumes, and private work.
 - Files: `CLAUDE.md` *(private)*, `.gitignore`, `README.md`
 
-### 0.2 Documentation spine
+### 0.2 Documentation spine ✅
 - Reader-routing index (routes by audience, not a table of contents); this roadmap; the complete
   future repository tree annotated with what belongs where, marked `(Phase N)` for directories
   that do not yet exist; the C4 Level-1 context diagram (system, users, external dependencies);
   and the live phase status board.
 - Files: `docs/README.md`, `docs/roadmap.md`, `docs/architecture/repository-structure.md`,
-  `docs/architecture/c4/context.md`, `docs/architecture/diagrams/os-to-runtime-mapping.mmd`,
+  `docs/architecture/c4/context.md`, `docs/architecture/diagrams/README.md`,
+  `docs/architecture/diagrams/os-to-runtime-mapping.md`,
   `docs/phases/README.md`, `docs/phases/phase-00-foundations/README.md`
 
-### 0.3 Decision practice
+### 0.3 Decision practice ✅ *(written; acceptance is 0.11)*
 - ADR template (Context → Decision → Status → Consequences), index table with status column,
   and the six decisions genuinely already made.
 - Files: `docs/adr/README.md`, `docs/adr/template.md`,
@@ -140,49 +172,136 @@ backfilled. Cost guardrails must exist before any cloud resource can be created.
   `docs/adr/0005-aws-with-hard-cost-ceiling.md`,
   `docs/adr/0006-ecs-fargate-over-eks.md`
 
-### 0.4 Foundations mapping
+### 0.4 Foundations mapping ✅
 - The operating-systems → agent-runtime concept mapping, written as a teaching document.
   This is the project's most distinctive early artifact.
 - Files: `docs/foundations/README.md`, `docs/foundations/os-to-agent-runtime.md`
 
-### 0.5 Collaboration setup
+### 0.5 Collaboration setup ✅
 - Contribution policy stated honestly (issues and critique welcome; core-runtime PRs declined
   until Phase 8, because building them is the point). PR and issue templates.
 - Files: `CONTRIBUTING.md`, `LICENSE`, `.github/PULL_REQUEST_TEMPLATE.md`,
   `.github/ISSUE_TEMPLATE/task.md`
+- **⏸ Deferred to Phase 1** — `.github/dependabot.yml` and the extra issue templates
+  (`bug.md`, `design-question.md`). Dependabot would currently watch four dev tools and two
+  GitHub Actions; it earns its keep once `pyproject.toml` has runtime dependencies and `web/`
+  exists. Dependabot **alerts** are already active by default on public repos, so nothing is
+  unmonitored meanwhile. A bug template is premature while there is no software to have bugs in.
 
-### 0.6 Environment readiness
-- Dependency groups (core/dev/test/ml/docs), the single command entry point, CI skeleton,
-  and every environment variable documented with obviously-fake placeholders.
+### 0.6 Tooling declaration ✅
+- Dependency **groups** declared, not installed: `dependencies` (runtime — empty at Phase 0),
+  `[dev]`, `[test]`, `[ml]`, `[docs]`. This is the dev/prod split: a production image runs
+  `pip install .` and gets runtime dependencies only, with no second requirements file to drift.
+  Lock files are generated from `pyproject.toml` at Phase 16, never hand-written.
+- The single command entry point (`make help/setup/lint/type/test/check`), CI skeleton, and every
+  environment variable documented with obviously-fake placeholders.
 - Files: `pyproject.toml`, `Makefile`, `.env.example`, `.github/workflows/ci.yml`
 
-### 0.7 Cloud guardrails
-- AWS account, IAM user for daily work, **hard budget cap and billing alarms configured before
-  any resource is created**. Commands pasted for manual execution.
-- Files: none tracked (account configuration)
+### 0.7 Environment creation ✅
+- conda environment created **in-repo** at `./myvenv` (gitignored), Python ≥ 3.11; install
+  `.[dev,test]` only.
+- **Install only what is used now.** Phase 0 has no application code, so runtime dependencies are
+  zero — FastAPI, psycopg, redis, and langgraph arrive in Phase 2 *when something first imports
+  them*. Pre-installing them means unused packages, versions stale before first use, and
+  conflicts resolved blind.
+- No `environment.yml`: it would duplicate the Python version already declared in
+  `pyproject.toml`. The creation command lives in the `Makefile`.
+- **`PYTHONNOUSERSITE=1` is set on the environment.** pip includes the machine's *user*
+  site-packages by default even inside a venv, which leaks unrelated packages in and breaks
+  reproducibility. Setting this makes `./myvenv` genuinely hermetic — verified by
+  `site.ENABLE_USER_SITE == False` and a clean `pip check`.
+- Files: `Makefile` (setup target), `./myvenv/` *(gitignored)*
 
-### 0.8 Private planning
-- Session log (did / next / blocked) and career strategy, kept out of the public record.
+### 0.8 Environment verification ✅ ← **assumptions become facts**
+- A single go/no-go script checking every assumption the later phases depend on: Python version,
+  the active interpreter is `./myvenv`, Docker Desktop running, PostgreSQL 17 reachable, and —
+  critically — **`pgvector` actually installed** (`CREATE EXTENSION vector;` succeeds). Having
+  PostgreSQL 17 does not mean the extension is present, and discovering that in Phase 2 is
+  expensive.
+- Also reports git config, remote, and confirms the private files are ignored.
+- Files: `scripts/dev/verify_env.py`, `scripts/dev/README.md`, `Makefile` (`make verify`)
+
+### 0.9 Quality gates active ✅
+- Pre-commit hooks wired (ruff format, ruff check, trailing whitespace, end-of-file, large-file
+  guard, and a **secret-pattern scan** — cheap insurance for a public repo). Run across all files
+  until clean, so `make check` locally equals what CI runs.
+- *(Moved here from Phase 1: the `Makefile` setup target calls `pre-commit install`, so the config
+  must exist at environment-creation time. Phase 1 extends this file with the dependency rule.)*
+- Files: `.pre-commit-config.yaml`
+
+### 0.10 Private planning & backup ✅
+- Session log (did / next / blocked), career strategy, pre-mortem, contingency, and writing plan —
+  kept out of the public record.
+- **Backup: ⏸ deferred by decision.** `private/` is gitignored, so the public remote does not
+  protect it. At Phase 0 the content is thin and reconstructable, so a dedicated mechanism would
+  be premature complexity at setup time. **Revisit trigger: end of Phase 2**, or once the session
+  log passes ~10 entries — by then it is genuinely irreplaceable. Simplest sufficient answer when
+  revisited: confirm the machine has *any* whole-disk or cloud-folder backup, which covers
+  `private/` with no project-specific mechanism at all.
 - Files: `private/planning/session-log.md`, `private/planning/strategy.md`
 
-**Concepts** — ADR practice, C4 modelling, documentation-as-deliverable, cost guardrails,
-public/private separation.
+### 0.11 Decisions accepted ✅
+- ADRs 0001–0006 reviewed and moved **Proposed → Accepted**, after which they are immutable —
+  a change of mind becomes a new superseding ADR. Index updated with status and date.
+- Files: `docs/adr/0001`–`0006`, `docs/adr/README.md`
 
-**Study** — Nygard on ADRs; Simon Brown's C4 model; arc42.
+### 0.12 Phase close-out
+- Branch protection enabled on `main` (PR required, CI green, no direct pushes) — the workflow
+  discipline starts here; all later work flows through `phase-NN/<desc>` branches.
+- Diagrams render-checked on GitHub; CI verified green; `writeup.md` completed against the exit
+  criteria; status board flipped to ✅; evidence captured.
+- Tag `v0.1.0-phase-00-foundations`. **Phase completion is marked by a tag, not by a long-lived
+  branch.**
+- Files: `docs/phases/phase-00-foundations/writeup.md`, `.../evidence/`, `docs/phases/README.md`
+
+### 0.13 Cloud guardrails — **DEFERRED, not skipped**
+- AWS account, IAM user for daily work, and a **hard budget cap with billing alarms configured
+  before any resource is created** (ADR-0005).
+- **Deliberately deferred to just before Phase 16**, which is the first phase that provisions
+  anything. Creating the account now starts an account clock and adds a verification dependency
+  for zero benefit — all development through Phase 15 is local.
+- The rule it enforces is unchanged and non-negotiable: **the budget alarm exists before the
+  first resource does.**
+- Files: none tracked (account configuration; alarm screenshot into Phase 16 evidence)
+
+**Concepts** — ADR practice, C4 modelling, documentation-as-deliverable, dependency-group
+separation (dev vs prod), environment verification over assumption, public/private separation,
+trunk-based workflow with tagged phase boundaries.
+
+**Study** — Nygard on ADRs; Simon Brown's C4 model; arc42; PEP 621 (`pyproject.toml` metadata).
 
 **Exit criteria**
+
+*Documentation*
 - [ ] A stranger reading `docs/` understands what is being built and why, with zero code present
-- [ ] Six ADRs written, each naming alternatives considered and why they lost
+- [ ] Six ADRs written, each naming alternatives considered and why they lost, and all moved
+      **Proposed → Accepted**
 - [ ] `docs/architecture/repository-structure.md` defines the home of every future file type,
       and every `(Ph N)` marker in it maps to an assigned sub-phase in this roadmap
-- [ ] C4 context diagram renders, and the OS↔runtime mapping diagram is exported
+- [ ] C4 context and OS↔runtime diagrams **render correctly on GitHub** (Mermaid inside `.md`)
 - [ ] `docs/phases/README.md` status board exists and reflects reality
-- [ ] AWS budget alarm confirmed active (screenshot in evidence/)
-- [ ] CI runs green on lint, formatting, and markdown/link checks (no package exists yet)
-- [ ] `.gitignore` verified to exclude `CLAUDE.md` and `private/` (`git check-ignore -v`)
+
+*Environment*
+- [ ] `./myvenv` created, Python ≥ 3.11, `.[dev,test]` installed and active
+- [ ] `verify_env` passes: Docker running · PostgreSQL 17 reachable · **`pgvector` installed**
+- [ ] `make check` passes locally
+- [ ] Pre-commit hooks installed and clean across all files
 - [ ] `.env.example` documents every variable with obviously-fake placeholders
 
-**Proof** — The repository is legible and disciplined before it is functional.
+*Safety & workflow*
+- [ ] `.gitignore` verified to exclude `CLAUDE.md` and `private/` (`git check-ignore -v`)
+- [x] ~~`private/` backed up~~ — ⏸ **deferred to end of Phase 2** (see 0.10; content is thin and
+      reconstructable at Phase 0, and a whole-disk backup covers it when revisited)
+- [ ] CI runs green on lint, formatting, and docs checks (no package exists yet)
+- [ ] Branch protection active on `main`
+- [ ] `writeup.md` completed, evidence captured, tag `v0.1.0-phase-00-foundations` applied
+
+*Deferred by decision (not blocking)*
+- AWS account + hard budget alarm → immediately before Phase 16, the first phase that provisions
+  anything. The rule stands: **the alarm exists before the first resource does.**
+
+**Proof** — The repository is legible and disciplined **before** it is functional, and every
+environmental assumption the next fifteen phases depend on has been verified rather than assumed.
 
 ---
 
@@ -316,11 +435,21 @@ that every later deepening is motivated by observed pain rather than a checklist
 
 **Concepts** — Walking skeleton / tracer bullet, integration-first design, vertical slicing.
 
+### 2.9 Roadmap review ← **the plan's own feedback loop**
+- The pain log is the first real evidence about whether Phases 3–16 are correctly scoped and
+  ordered. **Re-read this roadmap end to end against it** and decide explicitly: confirmed as
+  written, or revised. Either outcome is recorded as an ADR — "the plan survived contact with
+  reality" is itself a finding worth dating.
+- This is the only scheduled plan-review checkpoint. Everything before it was designed with no
+  running system; everything after it is informed by one.
+- Files: `docs/adr/00xx-roadmap-review-after-walking-skeleton.md`, `docs/roadmap.md` (if revised)
+
 **Exit criteria**
 - [ ] A question typed in the UI returns a streamed, retrieval-grounded answer end to end
 - [ ] Entire stack starts from one command
 - [ ] Pain log contains at least ten specific, dated observations
 - [ ] Each pain item is mapped to the phase that will close it
+- [ ] Roadmap reviewed against the pain log; confirmation or revision recorded as an ADR
 
 **Proof** — A recorded end-to-end demo, and the pain log. Every phase from here closes a line
 item on it, which is what keeps later work non-speculative.
@@ -450,7 +579,12 @@ actually break. This is the syscall boundary.
 ### 4.3 Capability & permission model
 - Agents carry a capability set; every call is checked before dispatch. Denials are logged, not
   silently dropped — repeated denied attempts are a signal.
-- Files: `src/keystone/domain/agent/capabilities.py`, `src/keystone/application/tools/permissions.py`
+- **Capability grants are bearer tokens with a TTL, not static ACL entries** — issued by the
+  runtime, scoped to a run and a tool, expiring on their own, and **revocable mid-run** (e.g. when
+  a budget trips, a tenant is suspended, or a run is quarantined). Distinct from 4.4: this governs
+  the *right to invoke*, whereas the broker governs the *external secret*.
+- Files: `src/keystone/domain/agent/capabilities.py`, `src/keystone/application/tools/permissions.py`,
+  `.../capability_tokens.py`
 
 ### 4.4 Credential brokering
 - The agent holds a reference, never a secret. The broker resolves it at call time, scoped to
@@ -524,53 +658,67 @@ memory-hierarchy problem.
 - Files: `src/keystone/infrastructure/persistence/{redis,postgres,objectstore}/`,
   `docs/architecture/concepts/memory-tiers.md`
 
-### 5.3 Promotion & demotion
-- Access-frequency and recency driven movement between tiers.
+### 5.3 Promotion & demotion — *anticipatory paging*
+- Access-frequency and recency driven movement between tiers, performed by policy ahead of need.
 - Files: `src/keystone/application/memory/tiering.py`
 
-### 5.4 Write policy
+### 5.4 Semantic page fault — *demand paging*
+- The counterpart to 5.3, and the other half of the OS analogy. When a run needs context that is
+  **not resident** in the active window — a fact from turn 50, a prior run's outcome — the miss
+  raises a **fault**: a handler runs a semantic search against L2/L3, retrieves the specific
+  memory page, and reinjects it into the working context, then execution continues.
+- Miss detection (what counts as a fault, and how it is recognised before the model hallucinates
+  instead), fault handler, retrieval, reinjection, and re-budgeting of the window afterwards.
+- **Fault cost is a measured metric** — faults are expensive (a search plus added tokens), so
+  fault rate and fault latency are tracked and fed back into the 5.3 promotion policy: a page
+  faulted repeatedly should have been promoted.
+- Files: `src/keystone/application/memory/page_fault.py`,
+  `docs/architecture/concepts/memory-tiers.md`
+
+### 5.5 Write policy
 - What is worth remembering, and when it is written (immediately vs on run completion).
 - Files: `src/keystone/application/memory/write_policy.py`
 
-### 5.5 Consolidation
+### 5.6 Consolidation
 - Background distillation of episodic → semantic. This is where memory quality is won.
 - Files: `src/keystone/application/memory/consolidation.py`
 
-### 5.6 Decay & eviction
+### 5.7 Decay & eviction
 - Relevance × recency scoring; eviction when a tier exceeds budget.
 - Files: `src/keystone/application/memory/decay.py`
 
-### 5.7 Context budgeter
+### 5.8 Context budgeter
 - Token accounting across system prompt, tools, memory, retrieved documents, and history, with
   an explicit priority order for what gets dropped first.
 - Files: `src/keystone/application/memory/context_budget.py`,
   `docs/architecture/concepts/context-budgeting.md`
 
-### 5.8 Asynchronous compaction
+### 5.9 Asynchronous compaction
 - A watermark (~75% of budget) triggers **background** summarization; the run continues on
   current context and the compacted version is swapped in at the next step boundary. Blocking
   the execution thread to summarize would stall every agent.
 - Files: `src/keystone/application/memory/compaction.py`, `src/keystone/interfaces/worker/`
 
-### 5.9 Position-aware assembly
+### 5.10 Position-aware assembly
 - Ordering and deduplication of injected context, accounting for uneven attention across long
   contexts.
 - Files: `src/keystone/application/memory/assembly.py`
 
-### 5.10 Concurrent-write conflict resolution
+### 5.11 Concurrent-write conflict resolution
 - Optimistic concurrency with version columns; conflict policy when two runs write the same
   memory record.
 - Files: `src/keystone/infrastructure/persistence/postgres/memory_store.py`
 
-### 5.11 Tenant isolation
+### 5.12 Tenant isolation
 - Memory partitioned per tenant at the storage layer, enforced rather than assumed.
 - Files: `src/keystone/application/memory/isolation.py`
 
-**Concepts** — Memory hierarchy, eviction policy, working set, compaction, consolidation,
-relevance scoring, optimistic concurrency control, context engineering.
+**Concepts** — Memory hierarchy, eviction policy, working set, **demand paging vs anticipatory
+paging**, page-fault handling, compaction, consolidation, relevance scoring, optimistic
+concurrency control, context engineering.
 
-**Anchor** — OS: paging, page replacement, working-set model, prefetching.
-Computer architecture: cache tiering. DBMS: lost-update anomaly, MVCC.
+**Anchor** — OS: paging, **page faults**, page replacement, working-set model, prefetching vs
+demand paging. Computer architecture: cache tiering, miss cost. DBMS: lost-update anomaly, MVCC.
 
 **Study** — MemGPT (context as virtual memory); *Lost in the Middle*; Anthropic context
 engineering guidance.
@@ -580,6 +728,8 @@ engineering guidance.
 - [ ] Recall accuracy, token cost, and latency **measured** against naive truncation
 - [ ] Compaction demonstrably does not block the execution thread
 - [ ] Records demonstrably move L1 → L2 → L3 under the tiering policy
+- [ ] A question about evicted context triggers a **semantic page fault**, retrieves the right
+      page, and answers correctly — with fault rate and fault latency recorded
 - [ ] Two concurrent writes to one memory record resolve without lost updates
 - [ ] Cross-tenant memory access is impossible by construction
 
@@ -1009,8 +1159,23 @@ something far better possible.
 - Files: `src/keystone/interfaces/http/routers/trajectory.py`, `web/components/`
 
 ### 11.5 Metrics
-- **RED** (rate, errors, duration) + **USE** (utilization, saturation, errors) + AI-specific:
-  tokens/sec, cache hit rate, provider fallback rate, eval score, cost per run, queue depth.
+- **RED** (rate, errors, duration) + **USE** (utilization, saturation, errors), plus the
+  AI-infrastructure primitives — the metrics that describe *this* kind of system rather than a
+  generic web service:
+
+  | Metric | Why it matters |
+  | --- | --- |
+  | **TTFT** (time-to-first-token), p50/p95/p99 | The canonical LLM latency metric; what a streaming user actually perceives |
+  | Total generation latency & tokens/sec | Throughput once streaming has begun |
+  | **Queue wait time** (not just depth) | Depth without wait time hides how long work actually sits |
+  | **Context-swap overhead** | Time and tokens spent on compaction and page faults (Ph 5) |
+  | **Page-fault rate & latency** | Memory-tiering effectiveness (Ph 5.4) |
+  | Tool-call latency distribution, per tool | Which tool is the bottleneck in a trajectory |
+  | Semantic cache hit rate | Model-plane efficiency (Ph 7.6) |
+  | Provider fallback & circuit-breaker trip rate | Model-plane health (Ph 7.4–7.5) |
+  | Token-budget utilisation vs provider TPM | Proximity to upstream limits (Ph 7.8) |
+  | Steps per run, cost per run, eval score | Trajectory efficiency and quality over time |
+
 - Files: `src/keystone/infrastructure/observability/metrics.py`, `infra/observability/prometheus/`
 
 ### 11.6 Dashboards
@@ -1031,7 +1196,8 @@ something far better possible.
 - Files: `src/keystone/infrastructure/observability/logging.py`
 
 **Concepts** — Distributed tracing, semantic conventions, deterministic replay debugging,
-RED/USE, SLOs and error budgets, actionable alerting.
+RED/USE, **AI-infrastructure primitives (TTFT, queue wait, context-swap overhead, page-fault
+rate)**, SLOs and error budgets, actionable alerting.
 
 **Anchor** — OS: `strace`, debuggers, breakpoints. CN: request tracing across boundaries.
 
@@ -1040,6 +1206,8 @@ RED/USE, SLOs and error budgets, actionable alerting.
 **Exit criteria**
 - [ ] One trace spans HTTP → queue → worker → tool → model with no gaps
 - [ ] Any historical run can be replayed and stepped through
+- [ ] **TTFT p50/p95/p99 is measured and charted**, alongside queue wait time, context-swap
+      overhead, and page-fault rate
 - [ ] Dashboards show system, business, and cost views
 - [ ] Every alert has a runbook
 - [ ] No secret or PII appears in any log or trace (verified by test)

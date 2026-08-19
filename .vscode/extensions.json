@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    "bierner.markdown-mermaid",
+    "davidanson.vscode-markdownlint",
+    "charliermarsh.ruff",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.mypy-type-checker",
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml",
+    "eamodio.gitlens",
+    "usernamehw.errorlens",
+    "ms-azuretools.vscode-docker"
+  ],
+  "unwantedRecommendations": [
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.flake8"
+  ]
+}

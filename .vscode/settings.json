@@ -1,0 +1,70 @@
+{
+  "python.defaultInterpreterPath": "./myvenv/python.exe",
+  "python.venvPath": ".",
+  "python.terminal.activateEnvironment": true,
+
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "mypy-type-checker.args": ["--config-file=pyproject.toml"],
+
+  "editor.rulers": [100],
+  "editor.renderWhitespace": "boundary",
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.rulers": [100],
+    "files.trimTrailingWhitespace": false,
+    "editor.defaultFormatter": "davidanson.vscode-markdownlint"
+  },
+
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  "[json]": {
+    "editor.tabSize": 2
+  },
+
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/.mypy_cache": true,
+    "**/*.egg-info": true,
+    "myvenv": true
+  },
+
+  "search.exclude": {
+    "**/myvenv": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/data": true,
+    "**/trash": true
+  },
+
+  "files.watcherExclude": {
+    "**/myvenv/**": true,
+    "**/node_modules/**": true,
+    "**/.git/objects/**": true
+  },
+
+  "git.autofetch": true,
+  "git.branchProtection": ["main"],
+  "git.branchProtectionPrompt": "alwaysPrompt",
+
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.scrollback": 20000
+}

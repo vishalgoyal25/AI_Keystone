@@ -212,10 +212,20 @@ ipython_config.py
 /sandbox-tmp/
 
 # ===== Editors & IDEs =======================================================
-.vscode/
+# Standard practice: track PROJECT-level config (so the repo configures itself for
+# anyone who clones it), ignore PERSONAL preference (themes, fonts) — those belong
+# in user settings, not the workspace.
+.vscode/*
+!.vscode/settings.json
 !.vscode/extensions.json
-!.vscode/settings.json.example
+!.vscode/launch.json
+!.vscode/tasks.json
+.vscode/*.local.json
 .idea/
+
+# Claude Code: project settings may be shared; *.local.json is per-machine
+.claude/settings.local.json
+.claude/*.local.json
 .cursor/
 .aider*
 *.swp
@@ -267,4 +277,3 @@ TODO.personal.md
 
 Agent_Execution_Runtime.md
 AI_Keystone_Full_Phase_Plan.md
-

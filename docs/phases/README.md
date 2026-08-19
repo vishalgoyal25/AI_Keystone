@@ -8,8 +8,8 @@ sub-phase detail lives in [`../roadmap.md`](../roadmap.md).
 
 | # | Phase | Status | Exit criteria met |
 | --- | --- | --- | --- |
-| 0 | [Foundations & Decisions](phase-00-foundations/) | 🟡 | 12 / 16 |
-| 1 | Architecture Skeleton | ⬜ | — |
+| 0 | [Foundations & Decisions](phase-00-foundations/) | ✅ | 16 / 16 · `v0.1.0-phase-00-foundations` |
+| 1 | Architecture Skeleton | 🟡 | 0 / — |
 | 2 | Walking Skeleton | ⬜ | — |
 | 3 ⭐ | Agent Execution Runtime | ⬜ | — |
 | 4 ⭐ | Tool Platform | ⬜ | — |

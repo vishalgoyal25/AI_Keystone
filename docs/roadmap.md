@@ -131,7 +131,7 @@ Data plane             ████               Ph 8
 
 # T1 — FOUNDATION
 
-## Phase 0 · Foundations & Decisions
+## Phase 0 · Foundations & Decisions ✅
 
 **Goal** — Establish that no decision in this project goes unrecorded, and that the environment
 is reproducible, before any application code exists.
@@ -245,7 +245,7 @@ Phase 16, and provisioning it early only starts a billing clock.
   a change of mind becomes a new superseding ADR. Index updated with status and date.
 - Files: `docs/adr/0001`–`0006`, `docs/adr/README.md`
 
-### 0.12 Phase close-out
+### 0.12 Phase close-out ✅
 - Branch protection enabled on `main` (PR required, CI green, no direct pushes) — the workflow
   discipline starts here; all later work flows through `phase-NN/<desc>` branches.
 - Diagrams render-checked on GitHub; CI verified green; `writeup.md` completed against the exit

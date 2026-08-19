@@ -39,6 +39,8 @@ later is mechanical rather than archaeological.
 ```
 AI_Keystone/
 ├── .github/          CI/CD workflows, PR & issue templates
+├── .vscode/          editor config — project standards tracked, personal prefs not
+├── .claude/          assistant settings; *.local.json is per-machine (gitignored)
 ├── docs/             ALL public documentation
 ├── src/keystone/     backend — hexagonal architecture
 ├── web/              thin Next.js interface                      (Ph 2)
@@ -86,9 +88,11 @@ docs/
 │   │   ├── context.md             L1 — system in its environment
 │   │   ├── container.md           L2 — processes & datastores      (Ph 2)
 │   │   └── component-*.md         L3 — internals, one per subsystem (Ph 3+)
-│   ├── diagrams/
-│   │   ├── *.mmd                  Mermaid sources — diffable, GitHub-rendered
-│   │   └── *.svg                  Excalidraw exports for shareable diagrams
+│   ├── diagrams/                  one per phase — see diagrams/README.md
+│   │   ├── README.md              format policy + index
+│   │   ├── *.md                   CANONICAL: ```mermaid block + caption.
+│   │   │                          GitHub renders these; standalone .mmd it does NOT
+│   │   └── *.svg                  optional exports for essays / external posts
 │   └── concepts/                  ← PERMANENT topical reference, kept current
 │       ├── determinism-boundary.md                                (Ph 3)
 │       ├── lease-and-fencing.md                                   (Ph 3)

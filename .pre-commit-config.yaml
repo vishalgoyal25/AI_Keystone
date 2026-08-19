@@ -1,0 +1,39 @@
+# AI_Keystone — pre-commit hooks
+#
+# Phase 0: formatting, hygiene, and a secret guard. These run on every commit and
+# mirror what CI checks, so `git commit` failing locally means CI would have failed.
+#
+# Phase 1 adds: mypy (needs the package to exist) and import-linter (the dependency rule).
+#
+# Install:  pre-commit install
+# Run all:  pre-commit run --all-files
+# Refresh:  pre-commit autoupdate
+
+repos:
+  # --- Ruff: lint + format (replaces black, isort, flake8) -------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.3
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # --- General hygiene -------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict        # Windows/macOS case-insensitivity traps
+      - id: mixed-line-ending          # keep LF in the repo despite Windows CRLF
+        args: [--fix=lf]
+      - id: check-added-large-files    # data and model weights must not be committed
+        args: [--maxkb=2048]
+
+      # --- The secret guard: this repo is PUBLIC ----------------------------
+      - id: detect-private-key

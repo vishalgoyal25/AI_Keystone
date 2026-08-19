@@ -1,7 +1,7 @@
 # ADR-0005 · AWS as cloud, under a hard cost ceiling
 
-- **Status:** Proposed
-- **Date:** 2026-08-18
+- **Status:** Accepted
+- **Date:** 2026-08-18 · **Accepted:** 2026-08-19
 - **Phase:** 0
 
 ## Context
